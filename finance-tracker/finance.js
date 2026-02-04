@@ -1,58 +1,71 @@
 const chalk = require('chalk');
-let transactions = [];
 
+let transactions = [];  
 
-function filterByType(transactions, type) {
-  return transactions.filter(tx => tx.type === type);
-}
- 
-function filterByCategory(transactions, category) {
-  return transactions.filter(tx => tx.category === category);
-}
-
-
-function calculateTotal(transactions) {
-  return transactions.reduce((total, tx) => total + tx.amount, 0);
-}
-
-function addTransaction(transaction) {
-  transactions.push({ ...transaction });
+function addTransaction(singleTransaction) {
+  const newTransaction = { ...singleTransaction };
+  transactions.push(newTransaction);
 }
 
 function getTotalIncome(transactions) {
-  return calculateTotal(filterByType(transactions, 'income'));
+  let total = 0;
+  for (const singleTransaction of transactions) {
+    if(singleTransaction.type === 'income') {
+      total += singleTransaction.amount;
+    }
+  }
+  return total;
 }
 
 function getTotalExpenses(transactions) {
-  return calculateTotal(filterByType(transactions, 'expense'));
+  let total = 0;
+  for (const singleTransaction of transactions) {
+    if(singleTransaction.type === 'expense') {
+      total += singleTransaction.amount;
+    }
+  }
+  return total;
 }
 
 function getBalance(transactions) {
-  return getTotalIncome(transactions) - getTotalExpenses(transactions);
+  const income = getTotalIncome(transactions);
+  const expenses = getTotalExpenses(transactions);
+  return income - expenses;
 }
 
 function getTransactionsByCategory(category, transactions) {
-  return filterByCategory(transactions, category);
+  const results = [];
+  for (const singleTransaction of transactions) {
+    if(singleTransaction.category === category) {
+      results.push(singleTransaction);
+    }
+  }
+  return results;
 }
 
 function getLargestExpense(transactions) {
-  const expenses = filterByType(transactions, 'expense');
-  return expenses.length > 0 
-    ? expenses.reduce((largest, tx) => tx.amount > largest.amount ? tx : largest)
-    : null;
+  let largest = null;
+  for (const singleTransaction of transactions) {
+    if(singleTransaction.type === 'expense') {
+      if(largest === null || singleTransaction.amount > largest.amount) {
+        largest = singleTransaction;
+      }
+    }
+  }
+  return largest;
 }
 
 function printAllTransactions(transactions) {
   console.log('\nAll Transactions:');
-  
-  transactions.forEach((tx, index) => {
-    const { type, category, amount, description } = tx;
+  let index = 1;
+  for (const singleTransaction of transactions) {
+    const {id, type, category, amount, description} = singleTransaction;
     const typeLabel = type === 'income' ? chalk.green('Income') : chalk.red('Expense');
-    const coloredAmount = type === 'income' ? chalk.green(`€${amount}`) : chalk.red(`€${amount}`);
-    const coloredCategory = chalk.yellow(category);
-    
-    console.log(`${index + 1}. [${typeLabel}] ${coloredCategory} - ${coloredAmount} (${description})`);
-  });
+    const coloredAmount = type === 'income' ? chalk.green(`${amount}`) : chalk.red(`${amount}`);
+    const coloredCategory = chalk.yellow(`${category}`);
+    console.log(`${index}. [${typeLabel}] ${coloredCategory} - ${coloredAmount} (${description})`);
+    index++;
+  }
 }
 
 module.exports = {
